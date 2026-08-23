@@ -1,0 +1,50 @@
+# BRLa pipeline configuration
+# NOTE: run `python run.py list-models` first and replace the model IDs below
+# with the actual IDs exposed by your CBorg deployment.
+
+cborg:
+  base_url_env: CBORG_BASE_URL
+  api_key_env: CBORG_API_KEY
+
+models:
+  alias_expander: "gpt-5.6-luna-low"
+  extractor: "amazon/claude-haiku-4-5"               # haiku / flash class (M5)
+  primary_rater: "amazon/claude-sonnet-4-6-high"        # sonnet class (M6)
+  second_rater: "gemini-3.5-flash-high"    # different provider family (M6)
+
+search:
+  provider: tavily
+  api_key_env: TAVILY_API_KEY
+  max_results_per_query: 6
+  search_depth: basic                # "basic" (1 credit) or "advanced" (2)
+
+fetch:
+  timeout_s: 20
+  per_host_delay_s: 1.5
+  max_pages_per_tech: 250            # cap on NEW trafilatura downloads per tech.
+  # Hosts that never yield extractable text. Applied in M3 (search hits) and
+  # M4 (DR-report URLs). See brla/utils.py:domain_blocked.
+  blocked_domains:
+    - youtube.com
+    - youtu.be
+    - tiktok.com
+    - facebook.com
+    - instagram.com
+    - twitter.com
+    - x.com
+    - pinterest.com
+    - linkedin.com
+
+extract:
+  # M5 makes one LLM call per page
+  max_pages_to_extract: 50
+
+dimensions: [TRL, MRL, RRL, ARL, ORL]
+
+paths:
+  cache_dir: cache
+  pages_dir: cache/pages                 # resolved pages M5 reads
+  tavily_pages_dir: cache/tavily_pages   # staged Tavily text, fallback only
+  input_file: input/technologies.xlsx
+  dr_reports_dir: deep_research_reports
+  output_dir: output
