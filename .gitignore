@@ -1,0 +1,21 @@
+node_modules
+.dendron.*
+build
+seeds
+.next
+pods/service-connections
+
+# Python
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+
+# Generated / cached data
+cache/
+output/
+
+# OS
+.DS_Store
+.claude/
