@@ -2,7 +2,7 @@
 id: 315u1i9u09kyuvnpyau193t
 title: Plan
 desc: ''
-updated: 1785191668064
+updated: 1794271384548
 created: 1784069470547
 ---
 # PLAN.md — BRLa Automation Pipeline Architecture
@@ -168,6 +168,3 @@ report exists, and costs only M5 extraction on the report text.
 4. Excel writer + fold-back script
 5. Smoke test on 2–3 technologies end-to-end, inspect every checkpoint
 6. Tune evidence_strength threshold, then run the batch
-
-
-Foldba
