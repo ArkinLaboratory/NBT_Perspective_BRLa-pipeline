@@ -23,7 +23,7 @@ human-review spreadsheet with flagged disagreements.
 │   ├── m5_evidence.py      #   M5: LLM evidence extraction from pages
 │   ├── m6_assign.py        #   M6: per-dimension bin assignment (2 raters)
 │   ├── m7_merge.py         #   M7: merge rater outputs, flag for review
-│   ├── output_writer.py    #   writes master.json + review.xlsx
+│   ├── output_writer.py    #   writes master.json + sector-split review.xlsx
 │   ├── foldback.py         #   reads reviewed xlsx back into master.json
 │   ├── config.py           #   config loader (YAML, path resolution)
 │   ├── llm.py              #   OpenAI-compatible LLM client + usage tracking
@@ -39,7 +39,8 @@ human-review spreadsheet with flagged disagreements.
 ├── deep_research_reports/  # Optional: Gemini Deep Research PDFs/text
 ├── output/
 │   ├── master.json         # Full structured output (all techs, all dims)
-│   └── review.xlsx         # Human-review spreadsheet
+│   ├── review.xlsx         # Human-review spreadsheet (sector-split)
+│   └── supplementary_table7.xlsx  # Publication-format output (generated)
 └── .env                    # API keys (not committed — see setup below)
 ```
 
@@ -51,7 +52,9 @@ human-review spreadsheet with flagged disagreements.
   containing JSON checkpoints for each module (aliases, search results, evidence,
   assignments, final merged output). Re-running a module skips work that already
   has a checkpoint unless you pass `--force`.
-- **Final output** → `output/master.json` and `output/review.xlsx`.
+- **Final output** → `output/master.json` and `output/review.xlsx` (sector-split,
+  one sheet per sector). For publication, generate `output/supplementary_table7.xlsx`
+  using `scripts/write_supplementary_table.py`.
 
 ---
 
@@ -174,8 +177,9 @@ conda run -n env-brla python run.py pipeline
 conda run -n env-brla python run.py status
 ```
 
-Output lands in `output/review.xlsx` (the review spreadsheet) and
-`output/master.json` (structured data for programmatic use).
+Output lands in `output/review.xlsx` (sector-split review spreadsheet, one
+sheet per sector) and `output/master.json` (structured data for programmatic
+use).
 
 ---
 
@@ -213,7 +217,7 @@ Run these to re-do a single step (usually with `--force`):
 
 | Command | What it does |
 |---|---|
-| `write-output` | Rebuild `output/master.json` and `output/review.xlsx` from checkpoints |
+| `write-output` | Rebuild `output/master.json` and `output/review.xlsx` from checkpoints. Human edits in an existing `review.xlsx` are preserved across rebuilds. |
 | `foldback` | Read human edits from `review.xlsx` back into `master.json` |
 | `status` | Show per-tech checkpoint status + cumulative token usage |
 | `list-models` | Print model IDs available at your LLM endpoint |
@@ -238,20 +242,21 @@ These standalone scripts in `scripts/` operate on the pipeline's outputs.
 They are not part of the pipeline itself — run them after a pipeline run
 completes.
 
-### `split_review_by_sector.py`
+### `write_supplementary_table.py`
 
-Splits `review.xlsx` into a multi-sheet workbook with one sheet per sector
-(sectors are assigned in `technologies.xlsx`), plus an "All" sheet. All
-formatting, hyperlinks, and filters are preserved.
+Generates the publication-format Supplementary Table 7 from `review.xlsx`.
+Drops pipeline diagnostic columns (evidence_strength, needs_review, etc.),
+re-sorts rows into publication order (tech order → TRL→MRL→RRL→ARL→ORL),
+and applies journal-template formatting (blue headers, yellow human_bin cells,
+hyperlinked source columns).
 
 ```bash
-conda run -n env-brla python scripts/split_review_by_sector.py \
-    --review output/review.xlsx
+conda run -n env-brla python scripts/write_supplementary_table.py
 
-# Custom output path:
-conda run -n env-brla python scripts/split_review_by_sector.py \
+# Custom paths:
+conda run -n env-brla python scripts/write_supplementary_table.py \
     --review output/review.xlsx \
-    --output output/review-sector-wise.xlsx
+    --output output/supplementary_table7.xlsx
 ```
 
 ### `compare_assessments.py`
@@ -289,9 +294,9 @@ conda run -n env-brla python scripts/add_manual_comparison.py \
 1.  Populate input/technologies.xlsx
 2.  python run.py pipeline                    # full automated run
 3.  python run.py status                      # verify all checkpoints landed
-4.  Open output/review.xlsx — review flagged rows, edit bins/notes
-5.  python run.py foldback                    # fold human edits back into master.json
-6.  python scripts/split_review_by_sector.py --review output/review.xlsx
+4.  Open output/review.xlsx — review flagged rows per sector sheet, edit bins/notes
+5.  python run.py write-output                # rebuild outputs (human edits preserved)
+6.  python scripts/write_supplementary_table.py  # generate publication xlsx
 ```
 
 To re-run a single module for one tech (e.g., re-extract evidence after
@@ -306,3 +311,19 @@ conda run -n env-brla python run.py write-output
 
 Downstream modules read from the previous module's checkpoint, so you only
 need to re-run from the step you changed onward.
+
+---
+
+## 7. References
+
+1. Vik, J., Melås, A. M., Stræte, E. P. & Søraa, R. A. Balanced readiness level assessment (BRLa): A tool for exploring new and emerging technologies. Technological Forecasting and Social Change 169, 120854 (2021). https://doi.org/10.1016/j.techfore.2021.120854
+
+---
+
+## 8. Citation
+
+If you use the BRLa-pipeline in this repository in your research, please cite:
+
+```
+Mishra S.*, Lui L.M.*, Arkin A.P. Deployability of biotechnologies for environmentally resilient agriculture. Nature Biotechnology (2026).
+```
