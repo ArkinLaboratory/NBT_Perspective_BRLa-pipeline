@@ -323,7 +323,4 @@ need to re-run from the step you changed onward.
 ## 8. Citation
 
 If you use the BRLa-pipeline in this repository in your research, please cite:
-
-```
-Mishra S.*, Lui L.M.*, Arkin A.P. Deployability of biotechnologies for environmentally resilient agriculture. Nature Biotechnology (2026).
-```
+Mishra, S.\*, Lui, L.M.\* & Arkin, A.P. Deployability of biotechnologies for environmentally resilient agriculture. Nat Biotechnol 44, 1798–1810 (2026). https://doi.org/10.1038/s41587-026-03373-0
